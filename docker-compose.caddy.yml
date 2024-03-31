@@ -1,0 +1,13 @@
+services:
+  menu_docker:
+    networks:
+      - proxy
+    labels:
+      - caddy.basicauth="/*"
+      - caddy.basicauth.h1dr0="${PASSWORD}"
+      - caddy="${FQDN}"
+      - caddy.reverse_proxy="{{upstreams 5000}}"
+
+networks:
+  proxy:
+    external: true
