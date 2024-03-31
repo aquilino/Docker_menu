@@ -1,0 +1,16 @@
+services:
+  menu_docker:
+    image: h1dr0/dockerdash:v3
+    build: .
+    ports:
+      - "5000:5000"
+    container_name: menu_docker
+    restart: unless-stopped
+    networks:
+      - proxy
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+
+networks:
+  proxy:
+    external: true
