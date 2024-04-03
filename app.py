@@ -38,21 +38,31 @@ def execute_command():
 
 @app.route('/start/<string:id>')
 def start(id):
-    container = client.containers.get(id)
-    container.start()
-    return 'Contenedor iniciado'
+    try:
+        container = client.containers.get(id)
+        container.start()
+        return 'Contenedor iniciado'
+    except docker.errors.NotFound:
+        return 'Contenedor no encontrado'
 
 @app.route('/stop/<string:id>')
 def stop(id):
-    container = client.containers.get(id)
-    container.stop()
-    return 'Contenedor detenido'
+    try:
+        container = client.containers.get(id)
+        container.stop()
+        return 'Contenedor detenido'
+    except docker.errors.NotFound:
+        return 'Contenedor no encontrado'
 
 @app.route('/remove/<string:id>')
 def remove(id):
-    container = client.containers.get(id)
-    container.remove()
-    return 'Contenedor eliminado'
+    try:
+        container = client.containers.get(id)
+        container.remove()
+        return 'Contenedor eliminado'
+    except docker.errors.NotFound:
+        return 'Contenedor no encontrado'
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)), debug=True)
