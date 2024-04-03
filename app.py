@@ -2,6 +2,7 @@ from flask import Flask, render_template, request
 import docker
 import os
 import subprocess
+import tempfile
 
 app = Flask(__name__)
 client = docker.from_env()
@@ -10,7 +11,13 @@ client = docker.from_env()
 def home():
     if request.method == 'POST':
         compose_file = request.form.get('compose_file')
-        subprocess.run(["docker-compose", "-f", compose_file, "up", "-d"])
+        # Save the compose file to a temporary directory
+        with tempfile.TemporaryDirectory() as temp_dir:
+            temp_compose_file = os.path.join(temp_dir, 'docker-compose.yml')
+            with open(temp_compose_file, 'w') as f:
+                f.write(compose_file)
+            # Execute the compose file
+            subprocess.run(["docker-compose", "-f", temp_compose_file, "up", "-d"])
         return 'Contenedores lanzados'
     else:
         containers = client.containers.list(all=True)
@@ -21,9 +28,12 @@ def home():
 def execute_command():
     if request.method == 'POST':
         command = request.form['command']
-        process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
-        stdout, stderr = process.communicate()
-        return render_template('log.html', stdout=stdout, stderr=stderr)
+        if command.startswith('docker'):
+            process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
+            stdout, stderr = process.communicate()
+            return render_template('log.html', stdout=stdout, stderr=stderr)
+        else:
+            return 'Comando no válido: solo se admiten comandos relacionados con Docker (docker)'
     return 'Comando no válido'
 
 @app.route('/start/<string:id>')
