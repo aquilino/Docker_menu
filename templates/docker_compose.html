@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Execute Docker Compose</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}">
+  </head>
+  <body>
+    <h1>Execute Docker Compose</h1>
+    <form action="/docker-compose" method="POST" enctype="multipart/form-data">
+      <input type="file" name="compose_file" required>
+      <button type="submit">Execute</button>
+    </form>
+    <button onclick="location.href='/'">Volver al Menú Principal</button>
+  </body>
+</html>
