@@ -9,7 +9,7 @@
     <ul>
         <li><a href="#contenedores">Listado de Contenedores</a></li>
         <li><a href="#imagenes">Listado de Imágenes</a></li>
-        <li><a href="#commandos">Ejecutar Comandos Docker</a></li>
+        <li><a href="execute">Ejecutar Comandos Docker</a></li>
         <li><a href="docker-compose">Ejecutar Docker Compose</a></li>
     </ul>
 
@@ -53,13 +53,5 @@
         </tr>
         {% endfor %}
     </table>
-    <h2 id="comandos">Ejecutar Comandos Docker</h2>
-    <div class="container">
-        <form action="/execute" method="post">
-            <label for="command">Commando:</label><br>
-            <input type="text" id="command" name="command"><br>
-            <button type="submit">Ejecutar</button>
-        </form>
-    </div>
 </body>
 </html>
