@@ -1,18 +1,27 @@
 from flask import Flask, render_template, request
 import docker
 import os , re
-import subprocess
 import tempfile
 from docker.errors import NotFound
 
 app = Flask(__name__)
 client = docker.from_env()
 
+def is_docker_daemon_running():
+    try:
+        client.ping()
+        return True
+    except docker.errors.DockerException:
+        return False
+
 @app.route('/', methods=['GET'])
 def home():
-    containers = client.containers.list(all=True)
-    images = client.images.list()
-    return render_template('index.html', containers=containers, images=images)
+    if is_docker_daemon_running():
+        containers = client.containers.list(all=True)
+        images = client.images.list()
+        return render_template('index.html', containers=containers, images=images)
+    else:
+        return 'El demonio de Docker no está encendido. Por favor, inicia Docker y vuelve a intentarlo.'
 
 @app.route('/docker-compose', methods=['GET', 'POST'])
 def compose():
@@ -30,12 +39,26 @@ def compose():
 def execute_command():
     if request.method == 'POST':
         command = request.form['command']
-        if command.startswith('docker'):
-            process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
-            stdout, stderr = process.communicate()
-            return render_template('log.html', stdout=stdout, stderr=stderr)
+        if command.startswith('docker run'):
+            # Parse the command to extract the image name and command arguments
+            image_name = command.split()[2]
+            command_args = command.split()[3:]
+            # Create a container using the Docker API
+            container = client.containers.run(image_name, command_args, detach=True)
+            # Return the container ID
+            return f'Container {container.id} created'
+        elif command.startswith('docker exec'):
+            # Parse the command to extract the container ID and command arguments
+            container_id = command.split()[2]
+            command_args = command.split()[3:]
+            # Get the container using the Docker API
+            container = client.containers.get(container_id)
+            # Execute the command in the container using the Docker API
+            result = container.exec_run(command_args)
+            # Return the command output
+            return f'Command output: {result.output.decode("utf-8")}'
         else:
-            return 'Comando no válido: solo se admiten comandos relacionados con Docker (docker)'
+            return 'Comando no válido: solo se admiten comandos relacionados con Docker (docker run, docker exec)'
     return render_template('log.html')
 
 @app.route('/start/<string:id>')
