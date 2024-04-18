@@ -6,22 +6,39 @@
 </head>
 <body>
     <h1>Execute Docker Command</h1>
-    <form action="/execute" method="post">
+    <form id="command-form">
         <label for="command">Command:</label><br>
         <input type="text" id="command" name="command"><br>
         <button type="submit">Execute</button>
     </form>
-    {% if stdout or stderr %}
-    <h2>Output:</h2>
-    {% if stdout %}
-    <h3>Standard Output:</h3>
-    <pre>{{ stdout }}</pre>
-    {% endif %}
-    {% if stderr %}
-    <h3>Standard Error:</h3>
-    <pre>{{ stderr }}</pre>
-    {% endif %}
-    {% endif %}
-<button onclick="location.href='/'">Volver al Menú Principal</button>
+    <div id="output"></div>
+    <button onclick="location.href='/'">Volver al Menú Principal</button>
+    <script>
+        // Get the form element
+        const form = document.getElementById('command-form');
+
+        // Add a submit event listener to the form
+        form.addEventListener('submit', (event) => {
+            // Prevent the form from submitting normally
+            event.preventDefault();
+
+            // Get the command from the form
+            const command = form.command.value;
+
+            // Send the command to the server using the fetch function
+            fetch('/execute', {
+                method: 'POST',
+                body: new URLSearchParams({
+                    command: command
+                })
+            })
+           .then(response => response.text())
+           .then(output => {
+                // Display the output in the output div
+                const outputDiv = document.getElementById('output');
+                outputDiv.innerHTML = `<pre>${output}</pre>`;
+            });
+        });
+    </script>
 </body>
 </html>
